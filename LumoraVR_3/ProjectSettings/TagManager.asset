@@ -15,6 +15,9 @@ TagManager:
   - Enemy
   - Character
   - SenderTMP
+  - Button
+  - Hand
+  - SeeSaw
   layers:
   - Default
   - TransparentFX
