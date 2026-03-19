@@ -148,8 +148,8 @@ public class NewtonSimulate : MonoBehaviour
         }
         else if (thirdLaw)
         {
-            EnableDefaultHands();
-            StartTyping("3rd Law coming soon...");
+            EnablePhysicsHands();
+            ThirdLawFlow();
         }
     }
 
@@ -199,6 +199,7 @@ public class NewtonSimulate : MonoBehaviour
             StartCoroutine(SwitchHandsAfterTyping());
         }
     }
+
 
     IEnumerator SwitchHandsAfterTyping()
     {
@@ -294,5 +295,43 @@ public class NewtonSimulate : MonoBehaviour
     void ResetButton()
     {
         buttonPressed = false;
+    }
+
+
+    void ThirdLawFlow()
+    {
+        // ✅ Always physics hands for 3rd law
+        EnablePhysicsHands();
+
+        if (stage == 1)
+        {
+            StartTyping("3rd Law of Motion\n\nEvery action has an equal and opposite reaction");
+        }
+        else if (stage == 2)
+        {
+            StartTyping("Action Force = Reaction Force");
+        }
+        else if (stage == 3)
+        {
+            StartTyping("Watch closely\n\nBoth objects will push each other equally");
+
+            StartCoroutine(ApplyThirdLawForce());
+        }
+    }
+
+    IEnumerator ApplyThirdLawForce()
+    {
+        // wait until typing finishes
+        while (!typingDone)
+            yield return null;
+
+        yield return new WaitForSeconds(0.5f);
+
+        obj1.isKinematic = false;
+        obj2.isKinematic = false;
+
+        // ✅ push in LOCAL forward directions
+        obj1.AddForce(obj1.transform.forward * pushForce, ForceMode.Impulse);
+        obj2.AddForce(-obj2.transform.forward * pushForce, ForceMode.Impulse);
     }
 }
