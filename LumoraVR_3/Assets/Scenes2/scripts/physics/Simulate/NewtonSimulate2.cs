@@ -6,144 +6,164 @@ public class NewtonSimulate2 : MonoBehaviour
 {
     [Header("UI")]
     public TextMeshProUGUI displayText;
-    public float typingSpeed = 0.03f;
+    public float typingSpeed = 0.04f;
 
-    [Header("Seesaw Setup")]
-    public GameObject seesaw;
-
-    public GameObject carObj;
-    public GameObject truckObj;
-
-    public Rigidbody carRB;
-    public Rigidbody truckRB;
-
-    public Transform carDropPoint;
-    public Transform truckDropPoint;
-
-    [Header("Race Setup")]
-    public GameObject raceObjects;
+    [Header("Race Objects")]
     public Rigidbody car;
     public Rigidbody truck;
 
     public Transform carStart;
     public Transform truckStart;
 
-    public float carSpeed = 10f;
-    public float truckSpeed = 5f;
+    [Header("Race Settings")]
+    public float baseSpeed = 5f;
+    public float carAcceleration = 3f;   // car gains speed faster
+    public float truckAcceleration = 1.5f;
 
-    private int stage = 0;
-    private int lastStage = -1;
-    private Coroutine typingCoroutine;
+    [Header("Finish UI")]
+    public TextMeshProUGUI finishText; // separate UI for finish
+    public float zoomSpeed = 2f;
+    public float fadeSpeed = 2f;
+
+    private bool raceStarted = false;
+    private bool finished = false;
+
+    private Vector3 finishScaleStart;
+    private Color finishColorStart;
 
     void Start()
     {
-        seesaw.SetActive(true);
+        // reset UI
+        displayText.text = "";
+        finishText.text = "";
+        finishText.transform.localScale = Vector3.one;
+        finishColorStart = finishText.color;
 
-        carObj.SetActive(false);
-        truckObj.SetActive(false);
-        raceObjects.SetActive(false);
-
-        StartTyping("Car and Truck\n\nPress button to begin");
+        // reset cars
+        ResetCars();
     }
 
-    void Update()
+    void ResetCars()
     {
-        if (stage == lastStage) return;
-        lastStage = stage;
+        // 🚫 disable physics FIRST
+        car.isKinematic = true;
+        truck.isKinematic = true;
 
-        // 🚗 Stage 1 → Car drop
-        if (stage == 1)
-        {
-            StartTyping("Car is lighter\n\nWatch what happens");
+        // set exact positions
+        car.transform.position = carStart.position;
+        truck.transform.position = truckStart.position;
 
-            DropCar();
-        }
+        car.transform.rotation = carStart.rotation;
+        truck.transform.rotation = truckStart.rotation;
 
-        // 🚛 Stage 2 → Truck drop
-        else if (stage == 2)
-        {
-            StartTyping("Truck is heavier\n\nObserve the difference");
-
-            DropTruck();
-        }
-
-        // 🏁 Stage 3 → Race setup
-        else if (stage == 3)
-        {
-            seesaw.SetActive(false);
-            raceObjects.SetActive(true);
-
-            SetupRace();
-
-            StartTyping("Now observe motion\n\nCar vs Truck");
-        }
-
-        // 🏎️ Stage 4 → Race
-        else if (stage == 4)
-        {
-            StartTyping("Car accelerates faster\n\nIt reaches first");
-
-            StartRace();
-        }
-    }
-
-    // 🚗 Drop Car
-    void DropCar()
-    {
-        carObj.SetActive(true);
-
-        carObj.transform.position = carDropPoint.position;
-
-        carRB.linearVelocity = Vector3.zero;
-        carRB.angularVelocity = Vector3.zero;
-
-        carRB.isKinematic = false;
-        carRB.useGravity = true;
-    }
-
-    // 🚛 Drop Truck
-    void DropTruck()
-    {
-        truckObj.SetActive(true);
-
-        truckObj.transform.position = truckDropPoint.position;
-
-        truckRB.linearVelocity = Vector3.zero;
-        truckRB.angularVelocity = Vector3.zero;
-
-        truckRB.isKinematic = false;
-        truckRB.useGravity = true;
-    }
-
-    // 🏁 Setup Race
-    void SetupRace()
-    {
-        car.position = carStart.position;
-        truck.position = truckStart.position;
-
+        // clear movement
         car.linearVelocity = Vector3.zero;
         truck.linearVelocity = Vector3.zero;
 
-        car.isKinematic = false;
-        truck.isKinematic = false;
+        car.angularVelocity = Vector3.zero;
+        truck.angularVelocity = Vector3.zero;
+    }
+    // ================= TRIGGER START =================
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!other.CompareTag("Player")) return;
+        if (raceStarted) return;
+
+        raceStarted = true;
+        StartCoroutine(RaceSequence());
     }
 
-    // 🏎️ Start Race
+    IEnumerator RaceSequence()
+    {
+        yield return StartCoroutine(TypeText("Get Ready"));
+
+        yield return Countdown("3");
+        yield return Countdown("2");
+        yield return Countdown("1");
+        yield return Countdown("GO!");
+
+        StartRace();
+    }
+
+    IEnumerator Countdown(string msg)
+    {
+        displayText.text = msg;
+        yield return new WaitForSeconds(1f);
+    }
+
     void StartRace()
     {
-        car.linearVelocity = Vector3.forward * carSpeed;
-        truck.linearVelocity = Vector3.forward * truckSpeed;
+        StartCoroutine(RaceMovement());
     }
 
-    // ✨ TYPEWRITER
-    void StartTyping(string msg)
+    IEnumerator RaceMovement()
     {
-        if (typingCoroutine != null)
-            StopCoroutine(typingCoroutine);
+        float carSpeed = baseSpeed;
+        float truckSpeed = baseSpeed;
 
-        typingCoroutine = StartCoroutine(TypeText(msg));
+        while (!finished)
+        {
+            // car accelerates faster
+            carSpeed += carAcceleration * Time.deltaTime;
+            truckSpeed += truckAcceleration * Time.deltaTime;
+
+            car.linearVelocity = Vector3.forward * carSpeed;
+            truck.linearVelocity = Vector3.forward * truckSpeed;
+
+            yield return null;
+        }
     }
 
+    // ================= FINISH TRIGGER =================
+    public void OnFinishTrigger()
+    {
+        if (finished) return;
+
+        finished = true;
+
+        // stop movement
+        car.linearVelocity = Vector3.zero;
+        truck.linearVelocity = Vector3.zero;
+
+        StartCoroutine(FinishSequence());
+    }
+
+    IEnumerator FinishSequence()
+    {
+        // zoom + fade text
+        finishText.text = "FINISH!";
+        finishText.color = new Color(1, 1, 1, 0);
+
+        float t = 0;
+
+        while (t < 1f)
+        {
+            t += Time.deltaTime * fadeSpeed;
+
+            finishText.transform.localScale = Vector3.one * (1 + t * zoomSpeed);
+            finishText.color = new Color(1, 1, 1, t);
+
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(1f);
+
+        // typewriter winner text
+        yield return StartCoroutine(TypeFinishText("Car is the winner"));
+    }
+
+    IEnumerator TypeFinishText(string msg)
+    {
+        finishText.text = "";
+
+        foreach (char c in msg)
+        {
+            finishText.text += c;
+            yield return new WaitForSeconds(typingSpeed);
+        }
+    }
+
+    // ================= TYPEWRITER =================
     IEnumerator TypeText(string msg)
     {
         displayText.text = "";
@@ -153,10 +173,5 @@ public class NewtonSimulate2 : MonoBehaviour
             displayText.text += c;
             yield return new WaitForSeconds(typingSpeed);
         }
-    }
-
-    public void OnButtonPressed()
-    {
-        stage++;
     }
 }

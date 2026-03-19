@@ -13,9 +13,12 @@ public class NewtonSimulate : MonoBehaviour
     public Rigidbody obj1;
     public Rigidbody obj2;
 
-    [Header("VR Hands")]
-    public GameObject leftHand;
-    public GameObject rightHand;
+    [Header("Hands Setup")]
+    public GameObject defaultLeftHand;
+    public GameObject defaultRightHand;
+
+    public GameObject physicsLeftHand;
+    public GameObject physicsRightHand;
 
     [Header("UI")]
     public TextMeshProUGUI displayText;
@@ -35,12 +38,15 @@ public class NewtonSimulate : MonoBehaviour
     private float inputBlockTime = 1.5f;
 
     private Coroutine typingCoroutine;
+    private bool typingDone = false;
 
     private Vector3 obj1StartPos;
     private Vector3 obj2StartPos;
 
     private Quaternion obj1StartRot;
     private Quaternion obj2StartRot;
+
+    private bool handsSwitched = false; // ✅ prevent repeated switching
 
     void Start()
     {
@@ -52,32 +58,52 @@ public class NewtonSimulate : MonoBehaviour
 
         SetObjectsStill();
 
-        // ❌ disable hands initially
-        if (leftHand) leftHand.SetActive(false);
-        if (rightHand) rightHand.SetActive(false);
+        // Initial hands
+        if (firstLaw)
+            EnablePhysicsHands();
+        else if (secondLaw)
+            EnablePhysicsHands(); // ✅ START WITH PHYSICS HANDS
+        else
+            EnableDefaultHands();
     }
 
+    // ================= HAND CONTROL =================
+    void EnableDefaultHands()
+    {
+        if (defaultLeftHand) defaultLeftHand.SetActive(true);
+        if (defaultRightHand) defaultRightHand.SetActive(true);
+
+        if (physicsLeftHand) physicsLeftHand.SetActive(false);
+        if (physicsRightHand) physicsRightHand.SetActive(false);
+    }
+
+    void EnablePhysicsHands()
+    {
+        if (defaultLeftHand) defaultLeftHand.SetActive(false);
+        if (defaultRightHand) defaultRightHand.SetActive(false);
+
+        if (physicsLeftHand) physicsLeftHand.SetActive(true);
+        if (physicsRightHand) physicsRightHand.SetActive(true);
+    }
+
+    // ================= RESET =================
     void ResetObjects()
     {
-        // 👉 must disable kinematic first
         obj1.isKinematic = false;
         obj2.isKinematic = false;
 
-        // Reset transform
         obj1.transform.position = obj1StartPos;
         obj2.transform.position = obj2StartPos;
 
         obj1.transform.rotation = obj1StartRot;
         obj2.transform.rotation = obj2StartRot;
 
-        // Reset physics
         obj1.linearVelocity = Vector3.zero;
         obj2.linearVelocity = Vector3.zero;
 
         obj1.angularVelocity = Vector3.zero;
         obj2.angularVelocity = Vector3.zero;
 
-        // 👉 stop movement again
         obj1.isKinematic = true;
         obj2.isKinematic = true;
     }
@@ -113,6 +139,7 @@ public class NewtonSimulate : MonoBehaviour
 
         if (firstLaw)
         {
+            EnablePhysicsHands();
             FirstLawFlow();
         }
         else if (secondLaw)
@@ -121,6 +148,7 @@ public class NewtonSimulate : MonoBehaviour
         }
         else if (thirdLaw)
         {
+            EnableDefaultHands();
             StartTyping("3rd Law coming soon...");
         }
     }
@@ -128,10 +156,6 @@ public class NewtonSimulate : MonoBehaviour
     // ================= FIRST LAW =================
     void FirstLawFlow()
     {
-        // ❌ ensure hands OFF
-        if (leftHand) leftHand.SetActive(false);
-        if (rightHand) rightHand.SetActive(false);
-
         if (stage == 1)
         {
             SetObjectsStill();
@@ -156,9 +180,9 @@ public class NewtonSimulate : MonoBehaviour
     // ================= SECOND LAW =================
     void SecondLawFlow()
     {
-        // ✅ enable hands
-        if (leftHand) leftHand.SetActive(true);
-        if (rightHand) rightHand.SetActive(true);
+        // ✅ Always keep physics hands until final stage
+        if (!handsSwitched)
+            EnablePhysicsHands();
 
         if (stage == 1)
         {
@@ -171,11 +195,21 @@ public class NewtonSimulate : MonoBehaviour
         else if (stage == 3)
         {
             StartTyping("Place car and truck on seesaw\n\nSee their weight difference");
+
+            StartCoroutine(SwitchHandsAfterTyping());
         }
     }
 
-    // ================= COMMON =================
+    IEnumerator SwitchHandsAfterTyping()
+    {
+        while (!typingDone)
+            yield return null;
 
+        EnableDefaultHands(); // ✅ SWITCH HERE
+        handsSwitched = true;
+    }
+
+    // ================= COMMON =================
     string GetStartText()
     {
         if (firstLaw) return "1st Law of Motion\n\nPress button to begin";
@@ -230,6 +264,8 @@ public class NewtonSimulate : MonoBehaviour
 
     IEnumerator TypeText(string msg)
     {
+        typingDone = false;
+
         displayText.text = "";
 
         foreach (char c in msg)
@@ -237,6 +273,8 @@ public class NewtonSimulate : MonoBehaviour
             displayText.text += c;
             yield return new WaitForSeconds(typingSpeed);
         }
+
+        typingDone = true;
     }
 
     // ================= BUTTON =================

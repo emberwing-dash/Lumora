@@ -18,6 +18,8 @@ TagManager:
   - Button
   - Hand
   - SeeSaw
+  - Car
+  - Seesaw
   layers:
   - Default
   - TransparentFX
