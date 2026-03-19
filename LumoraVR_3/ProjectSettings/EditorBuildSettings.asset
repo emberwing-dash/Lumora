@@ -5,21 +5,18 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/0_MainScene/0_Starting/MainMenu.unity
-    guid: f82e87e6e77e6004aae602caaf10f2be
-  - enabled: 0
-    path: Assets/Scenes/0_MainScene/3_Cutscene/Cutscene_Fighting.unity
-    guid: 94b262d53e00cb940ae91be1220a3902
-  - enabled: 0
-    path: Assets/Scenes/0_MainScene/4_SmartNPC_Tutorial/Lena_SmartNPC.unity
-    guid: 553dc6ef5ba16b146b6730ed8d537b6f
-  - enabled: 0
-    path: Assets/Scenes/0_MainScene/1_Quests/QuestAdventure.unity
-    guid: 286db1f35f4765f43a4ec3f2542ede20
   - enabled: 1
     path: Assets/Scenes2/scenes/LumoraMenu.unity
     guid: 5c48822f56e19be4aa9cb4d0b15e948f
+  - enabled: 1
+    path: Assets/Scenes2/scenes/LumoraMath.unity
+    guid: d940c03de7102154b9fcc79bad20ac10
+  - enabled: 1
+    path: Assets/Scenes2/scenes/LumoraPhysics.unity
+    guid: 90a85d628775c0f46bf6ede47549b259
+  - enabled: 1
+    path: Assets/Scenes2/scenes/LumoraChemistry.unity
+    guid: c30429ba76ff47b4fb6f7eadc41b1846
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 58f7cfd7389b5af40b323da10e8c83a2, type: 2}

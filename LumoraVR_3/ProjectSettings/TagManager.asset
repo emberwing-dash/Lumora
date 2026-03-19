@@ -20,6 +20,10 @@ TagManager:
   - SeeSaw
   - Car
   - Seesaw
+  - Apple
+  - Orange
+  - Banana
+  - Watermelon
   layers:
   - Default
   - TransparentFX
