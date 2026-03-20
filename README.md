@@ -4,8 +4,12 @@
 ---
 
 # Demo video & game link
-Link to demo video: 
-Link to game: 
+Link to demo video: https://youtu.be/vzpV7l5xnms
+
+Link to game: https://rishav-goswami.itch.io/lumora
+
+or drive link: [https://drive.google.com/drive/folders/1WZXgMMSjCXkCTBpdFWpreEmwqhgZWgGZ?usp=sharing](https://drive.google.com/file/d/13tjh5YFiQBeqmwkKvZhj8vet6XYkPZrO/view?usp=sharing)
+
 ---
 ## 📖 Overview
 
