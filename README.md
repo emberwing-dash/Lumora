@@ -1,5 +1,8 @@
 # 🌌 Lumora – VR EdTech Experience  
+
 ### Interactive Learning Through Immersive Gameplay
+
+![lumora](https://github.com/user-attachments/assets/5524d374-2812-4664-adf6-9230bb2801ab)
 
 ---
 
